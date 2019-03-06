@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
+import emoji
 
 """bot-env\Scripts\activate.bat"""
 
@@ -31,8 +32,8 @@ async def on_command_error(ctx, error):
 @bot.command()
 async def help(ctx):
     e = discord.Embed(
-        title = "PyBot Commands",
-        description = "All available commands on this bot.",
+        title = "PyBot Commands - Created by Alex Massin & Alex Gomes",
+        description = "All available commands provided by PyBot.",
         color = 0XFFDF00
     )
     
@@ -49,19 +50,30 @@ async def help(ctx):
         value = "Returns the avatar of a user.",
         inline = False
     )
+
+    e.add_field(
+        name = "{0}say".format(bot.command_prefix),
+        value = "Says a custom message provided by the user.",
+        inline = False
+    )
     
     await ctx.send(embed = e)
+
 
 @bot.command()
 async def ping(ctx):
     await ctx.send("{0} Pong! {1} ms :ping_pong:".format(ctx.message.author.mention, round(bot.latency * 1000)))
 
+@bot.command()
+async def say(ctx):
+    message = ctx.message.clean_content[5:]
+    await ctx.message.delete()
+    await ctx.send(message)
 
 @bot.command()
 async def avatar(ctx):
     message = ctx.message.content[10: len(ctx.message.content) -1]
     message = message.replace("!", "")
-
 
     if len(message) != 0:
         if (not any(char.isdigit() for char in message) or bot.get_user(int(message)) == None):
@@ -85,10 +97,32 @@ async def avatar(ctx):
     await ctx.send(embed = e)  
 
 @bot.command()
+async def story(ctx, *, story):
+    words = story.split(" ")
+    result = ""
+    """
+    for string in words:
+        buffer = emoji.emojize(f":{string}:")
+        if buffer == (u'{0}'.format(buffer)):
+            result += buffer + " "
+        else:    
+            result += string + " "
+        
+    await ctx.send(result)
+    buffer = emoji.emojize(f":{story}:")
+    await ctx.send(buffer)
+    await ctx.send(emoji.demojize(buffer))
+    await ctx.send(emoji.demojize(story))
+    await ctx.send(emoji.emojize(story))
+    if emoji.demojize(story) == (f":{story}:"):
+        await ctx.send("Legit")
+"""
+@bot.command()
 async def stop(ctx):
     aID = 161998154881826826
     bID = 142404845234683904
     if ctx.message.author.id == aID or ctx.message.author.id == bID:
+        await ctx.send("Bot Stopped :electric_plug:")
         await bot.logout()
 
 ### Run
