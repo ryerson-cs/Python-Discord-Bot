@@ -100,14 +100,15 @@ async def avatar(ctx):
 async def story(ctx, *, story):
     words = story.split(" ")
     result = ""
-    """
+
     for string in words:
-        buffer = emoji.emojize(f":{string}:")
-        if buffer == (u'{0}'.format(buffer)):
-            result += buffer + " "
+        buffer = emoji.emojize(f":{string}:", True)
+        if buffer == (f":{string}:"):
+            result += buffer.replace(":", "") + " "
         else:    
-            result += string + " "
-        
+            result += buffer + " "
+    await ctx.send(result)
+"""       
     await ctx.send(result)
     buffer = emoji.emojize(f":{story}:")
     await ctx.send(buffer)
@@ -116,7 +117,12 @@ async def story(ctx, *, story):
     await ctx.send(emoji.emojize(story))
     if emoji.demojize(story) == (f":{story}:"):
         await ctx.send("Legit")
-"""
+    # ---
+    """
+    yeeter = emoji.emojize(f":{story}:", False)
+    if yeeter == (f":{story}:"):
+        await ctx.send("Invalid Emoji")
+
 @bot.command()
 async def stop(ctx):
     aID = 161998154881826826
