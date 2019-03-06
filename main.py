@@ -56,6 +56,12 @@ async def help(ctx):
         value = "Says a custom message provided by the user.",
         inline = False
     )
+
+    e.add_field(
+        name = "{0}story".format(bot.command_prefix),
+        value = "Creates custom story out of emojis provided by the user.",
+        inline = False
+    )
     
     await ctx.send(embed = e)
 
