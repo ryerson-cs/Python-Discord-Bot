@@ -108,20 +108,7 @@ async def story(ctx, *, story):
         else:    
             result += buffer + " "
     await ctx.send(result)
-"""       
-    await ctx.send(result)
-    buffer = emoji.emojize(f":{story}:")
-    await ctx.send(buffer)
-    await ctx.send(emoji.demojize(buffer))
-    await ctx.send(emoji.demojize(story))
-    await ctx.send(emoji.emojize(story))
-    if emoji.demojize(story) == (f":{story}:"):
-        await ctx.send("Legit")
-    # ---
-    """
-    yeeter = emoji.emojize(f":{story}:", False)
-    if yeeter == (f":{story}:"):
-        await ctx.send("Invalid Emoji")
+
 
 @bot.command()
 async def stop(ctx):
