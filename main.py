@@ -79,20 +79,25 @@ async def help(ctx):
     )
 
     e.add_field(
-        name = "{0}avatar".format(bot.command_prefix),
+        name = "{0}avatar <<user>>".format(bot.command_prefix),
         value = "Returns the avatar of a user.",
         inline = False
     )
 
     e.add_field(
-        name = "{0}say".format(bot.command_prefix),
+        name = "{0}say <<message>>".format(bot.command_prefix),
         value = "Says a custom message provided by the user.",
         inline = False
     )
 
     e.add_field(
-        name = "{0}story".format(bot.command_prefix),
+        name = "{0}story <<message>>".format(bot.command_prefix),
         value = "Creates custom story out of emojis provided by the user.",
+        inline = False
+    )
+    e.add_field(
+          name = "{0}reddit <<subreddit>>".format(bot.command_prefix),
+        value = "Generates random post from given subreddit.",
         inline = False
     )
     
