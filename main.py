@@ -130,6 +130,7 @@ async def stop(ctx):
 
 @bot.command()
 async def aww(ctx):
+    response = await ctx.send("◌ Collecting...")
     url = "https://old.reddit.com/r/aww"
     headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
     request = urllib.request.Request(url,headers=headers)
@@ -145,16 +146,16 @@ async def aww(ctx):
         if not url.startswith('http'):
             url = "https://reddit.com"+url 
      
-        print("%s - %s"%(title,url))
         record = {
-            'title':title,
-            'url':url
+            'Title':title,
+            'Post':url
             }
         extracted_records.append(record)
-    
+    await response.delete()
     randLink = extracted_records[random.randint(0, len(extracted_records))]
     for key, value in randLink.items():
-        await ctx.send(value + "\n")
+        await ctx.send("**" + key + ":**\n" + value + "\n")
+    
 
 
 
