@@ -2,6 +2,10 @@ import discord
 from discord.ext import commands
 import asyncio
 import emoji
+import urllib.request
+from bs4 import BeautifulSoup
+import json
+import random
 
 """bot-env\Scripts\activate.bat"""
 
@@ -123,6 +127,36 @@ async def stop(ctx):
     if ctx.message.author.id == aID or ctx.message.author.id == bID:
         await ctx.send("Bot Stopped :electric_plug:")
         await bot.logout()
+
+@bot.command()
+async def aww(ctx):
+    url = "https://old.reddit.com/r/aww"
+    headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
+    request = urllib.request.Request(url,headers=headers)
+    html = urllib.request.urlopen(request).read()
+    scrapper = BeautifulSoup(html,'html.parser')
+    table = scrapper.find("div",attrs={'id':'siteTable'})
+    links = table.find_all("a",class_="title")
+    extracted_records = []
+    for link in links: 
+        title = link.text
+        url = link['href']
+       
+        if not url.startswith('http'):
+            url = "https://reddit.com"+url 
+     
+        print("%s - %s"%(title,url))
+        record = {
+            'title':title,
+            'url':url
+            }
+        extracted_records.append(record)
+    
+    randLink = extracted_records[random.randint(0, len(extracted_records))]
+    for key, value in randLink.items():
+        await ctx.send(value + "\n")
+
+
 
 ### Run
 bot.run(read_token())
