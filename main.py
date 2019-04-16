@@ -22,6 +22,35 @@ def read_token():
         lines = f.readlines()
         return lines[0].strip()
 
+async def find_reddit_link(subreddit):
+    url = "https://old.reddit.com/r/" + subreddit
+    headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
+    try:    
+        request = urllib.request.Request(url,headers=headers)
+        html = urllib.request.urlopen(request).read()
+        scrapper = BeautifulSoup(html,'html.parser')
+        table = scrapper.find("div",attrs={'id':'siteTable'})
+    except:
+        return "Not Found"
+
+    try:
+        links = table.find_all("a",class_="title")
+    except:
+        return "NSFW"
+    extracted_records = []
+    for link in links: 
+        title = link.text
+        url = link['href']
+       
+        if not url.startswith('http'):
+            url = "https://reddit.com"+url 
+     
+        record = {
+            'Title':title,
+            'Post':url
+            }
+        extracted_records.append(record)
+    return extracted_records[random.randint(0, len(extracted_records))]
 ### Events
 @bot.event
 async def on_ready():
@@ -129,32 +158,16 @@ async def stop(ctx):
         await bot.logout()
 
 @bot.command()
-async def aww(ctx):
+async def reddit(ctx, *, subreddit):
     response = await ctx.send("◌ Collecting...")
-    url = "https://old.reddit.com/r/aww"
-    headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
-    request = urllib.request.Request(url,headers=headers)
-    html = urllib.request.urlopen(request).read()
-    scrapper = BeautifulSoup(html,'html.parser')
-    table = scrapper.find("div",attrs={'id':'siteTable'})
-    links = table.find_all("a",class_="title")
-    extracted_records = []
-    for link in links: 
-        title = link.text
-        url = link['href']
-       
-        if not url.startswith('http'):
-            url = "https://reddit.com"+url 
-     
-        record = {
-            'Title':title,
-            'Post':url
-            }
-        extracted_records.append(record)
+    randLink = await find_reddit_link(subreddit)
     await response.delete()
-    randLink = extracted_records[random.randint(0, len(extracted_records))]
+
+    if(not type(randLink) is dict):
+        await ctx.send("Subreddit is " + randLink + ".")
+        return
     for key, value in randLink.items():
-        await ctx.send("**" + key + ":**\n" + value + "\n")
+        await ctx.send("__" + key + ":__\n" + value + "\n")
     
 
 
