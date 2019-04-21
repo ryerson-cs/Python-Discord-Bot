@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 import json
 import random
 
+
+
 """bot-env\Scripts\activate.bat"""
 
 ### Setup
@@ -50,7 +52,7 @@ async def find_reddit_link(subreddit):
             'Post':url
             }
         extracted_records.append(record)
-    return extracted_records[random.randint(0, len(extracted_records))]
+    return extracted_records
 ### Events
 @bot.event
 async def on_ready():
@@ -96,8 +98,18 @@ async def help(ctx):
         inline = False
     )
     e.add_field(
-          name = "{0}reddit <<subreddit>>".format(bot.command_prefix),
+        name = "{0}reddit <<subreddit>>".format(bot.command_prefix),
         value = "Generates random post from given subreddit.",
+        inline = False
+    )
+    e.add_field(
+        name = "{0}subreddit <<subreddit>>".format(bot.command_prefix),
+        value = "Generates top 5 hot posts from given subreddit.",
+        inline = False
+    )
+    e.add_field(
+        name = "{0}google <<word>>".format(bot.command_prefix),
+        value = "Generates definition from Google.",
         inline = False
     )
     
@@ -155,6 +167,43 @@ async def story(ctx, *, story):
 
 
 @bot.command()
+async def whois(ctx):
+    message = ctx.message.content[9: len(ctx.message.content) -1]
+    message = message.replace("!", "")
+
+    if len(message) != 0:
+        if (not any(char.isdigit() for char in message) or bot.get_user(int(message)) == None):
+            await ctx.send("Please input proper parameters.")
+            return 
+        username = bot.get_user(int(message)).name
+        discrim = bot.get_user(int(message)).discriminator
+        avatarURL = bot.get_user(int(message)).avatar_url
+
+    else:
+        username = ctx.message.author.name
+        discrim = ctx.message.author.discriminator
+        avatarURL = ctx.message.author.avatar_url
+    
+    e = discord.Embed(
+        title = "Who is {0}?".format(username),
+        color = 0XFFDF00
+    )
+
+    e.add_field(
+        name = "Discriminator",
+        value = discrim,
+        inline = False
+    )
+
+    e.add_field(
+        name = "ID",
+        value = message,
+        inline = False
+    )
+
+    await ctx.send(embed = e)
+
+@bot.command()
 async def stop(ctx):
     aID = 161998154881826826
     bID = 142404845234683904
@@ -162,19 +211,72 @@ async def stop(ctx):
         await ctx.send("Bot Stopped :electric_plug:")
         await bot.logout()
 
+
+@bot.command()
+async def subreddit(ctx, *, subreddit):
+    response = await ctx.send("◌ Collecting...")
+    links = await find_reddit_link(subreddit)
+    e = discord.Embed(
+        title = "Posts from {0}".format(subreddit),
+        description = "Top 5 posts from Hot.",
+        color = 0XFFDF00
+    )
+    
+    if(not type(links) is list):
+        await ctx.send("Subreddit is " + links + ".")
+        return
+    for post in links[0: 5]:
+        for key, val in post.items():
+            e.add_field(
+                name = key,
+                value = val,
+                inline = False
+            )
+            
+    await response.delete()
+
+    await ctx.send(embed = e)
+
+
+
 @bot.command()
 async def reddit(ctx, *, subreddit):
     response = await ctx.send("◌ Collecting...")
-    randLink = await find_reddit_link(subreddit)
+    links = await find_reddit_link(subreddit)
+    randLink = links[random.randint(0, len(links) - 1 )]
     await response.delete()
 
-    if(not type(randLink) is dict):
-        await ctx.send("Subreddit is " + randLink + ".")
+    if(not type(links) is list):
+        await ctx.send("Subreddit is " + links + ".")
         return
     for key, value in randLink.items():
         await ctx.send("__" + key + ":__\n" + value + "\n")
     
-
+@bot.command()
+async def google(ctx, *, definition):
+    response = await ctx.send("◌ Collecting...")
+    temp = definition.replace(" ", "%20")
+    url = "https://www.google.com/search?q=" + definition + "%20definition"
+    headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
+    try:
+        request = urllib.request.Request(url,headers=headers)
+        html = urllib.request.urlopen(request).read()
+        scrapper = BeautifulSoup(html,'html.parser')
+        table = scrapper.find("div",attrs={'class':'lr_dct_sf_sen Uekwlc XpoqFe', 'class': 'PNlCoe XpoqFe'})
+        links = table.find("span")
+    except:
+        await ctx.send("Cannot find definition for " + definition)
+        return
+    await response.delete()
+    e = discord.Embed(
+        title = "Definiton of " + definition,
+        description = str(links)[6:len(str(links)) - 7],
+        color = 0XFFDF00
+    )
+    e.set_footer(
+        text="Source: " + url
+    )
+    await ctx.send(embed = e)
 
 
 ### Run
