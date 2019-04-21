@@ -256,7 +256,7 @@ async def reddit(ctx, *, subreddit):
 async def google(ctx, *, definition):
     response = await ctx.send("◌ Collecting...")
     temp = definition.replace(" ", "%20")
-    url = "https://www.google.com/search?q=" + definition + "%20definition"
+    url = "https://www.google.com/search?q=" + temp + "%20definition"
     headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
     try:
         request = urllib.request.Request(url,headers=headers)
