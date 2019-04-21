@@ -4,14 +4,16 @@ import asyncio
 import emoji
 import urllib.request
 from bs4 import BeautifulSoup
+from selenium import webdriver
 import json
 import random
+import requests
 
 """bot-env\Scripts\activate.bat"""
 
 ### Setup
 client = discord.Client()
-bot = commands.Bot(command_prefix = "$")
+bot = commands.Bot(command_prefix = "&")
 bot.activity = discord.Game("{0}help for commands.".format(bot.command_prefix)) #Please override later
 bot.remove_command("help")
 
@@ -174,7 +176,41 @@ async def reddit(ctx, *, subreddit):
     for key, value in randLink.items():
         await ctx.send("__" + key + ":__\n" + value + "\n")
     
+@bot.command()
+async def anime(ctx, *, title):
+    response = await ctx.send("◌ Hold on...")
+    url = "https://twist.moe/a/" + title.lower().strip().replace(" ", "-")
+    await response.delete()
 
+    await ctx.send("found " + url)
+
+    
+    driver = webdriver.PhantomJS()
+    driver.implicitly_wait(10)
+    driver.get(url)
+    soup = BeautifulSoup(driver.page_source)
+    filename = "testb.txt"
+    myfile = open(filename, "w")
+    myfile.write(soup.prettify())
+    myfile.close()
+    
+
+    cookies = {'__cfduid': 'de16ca1d668a9f1909df7249e8b061b8d1555654544'}
+    r = requests.post(url, cookies=cookies)
+    print(r.content)
+
+    
+    headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
+    request = urllib.request.Request(url,headers=headers)
+    html = urllib.request.urlopen(request).read()
+    soup = BeautifulSoup(html, 'html.parser')
+    tag=soup.find('video')
+    #print(tag)
+    
+    filename = "test.txt"
+    myfile = open(filename, "w")
+    myfile.write(r.text)
+    myfile.close()
 
 
 ### Run
