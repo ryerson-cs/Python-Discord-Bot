@@ -4,10 +4,8 @@ import asyncio
 import emoji
 import urllib.request
 from bs4 import BeautifulSoup
-from selenium import webdriver
 import json
 import random
-import requests
 
 """bot-env\Scripts\activate.bat"""
 
@@ -184,7 +182,7 @@ async def anime(ctx, *, title):
 
     await ctx.send("found " + url)
 
-    
+    """
     driver = webdriver.PhantomJS()
     driver.implicitly_wait(10)
     driver.get(url)
@@ -193,11 +191,6 @@ async def anime(ctx, *, title):
     myfile = open(filename, "w")
     myfile.write(soup.prettify())
     myfile.close()
-    
-
-    cookies = {'__cfduid': 'de16ca1d668a9f1909df7249e8b061b8d1555654544'}
-    r = requests.post(url, cookies=cookies)
-    print(r.content)
 
     
     headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
@@ -205,13 +198,8 @@ async def anime(ctx, *, title):
     html = urllib.request.urlopen(request).read()
     soup = BeautifulSoup(html, 'html.parser')
     tag=soup.find('video')
-    #print(tag)
-    
-    filename = "test.txt"
-    myfile = open(filename, "w")
-    myfile.write(r.text)
-    myfile.close()
-
+    #print(tag) 
+    """
 
 ### Run
 bot.run(read_token())
