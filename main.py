@@ -6,8 +6,8 @@ import urllib.request
 from bs4 import BeautifulSoup
 import json
 import random
-
-
+import requests
+import re
 
 """bot-env\Scripts\activate.bat"""
 
@@ -110,6 +110,16 @@ async def help(ctx):
     e.add_field(
         name = "{0}google <<word>>".format(bot.command_prefix),
         value = "Generates definition from Google.",
+        inline = False
+    )
+    e.add_field(
+        name = "{0}define <<word>>".format(bot.command_prefix),
+        value = "Returns dictionary definition.",
+        inline = False
+    )
+    e.add_field(
+        name = "{0}verbose <<sentence>>".format(bot.command_prefix),
+        value = "Changes your sentence words with their synonyms.",
         inline = False
     )
     
@@ -258,7 +268,7 @@ async def anime(ctx, *, title):
     url = "https://twist.moe/a/" + title.lower().strip().replace(" ", "-")
     await response.delete()
 
-    await ctx.send("found " + url)
+    await ctx.send("Try this: " + url)
 
     """
     driver = webdriver.PhantomJS()
@@ -301,6 +311,66 @@ async def google(ctx, *, definition):
         text="Source: " + url
     )
     await ctx.send(embed = e)
+
+@bot.command()
+async def verbose(ctx, *, sentence):
+    reply = await ctx.send("◌ Generating...")
+    result = ""
+    for word in sentence.lower().split(" "):
+        if len(word) <= 3:
+            result += word + " "
+            continue
+        response = requests.get("https://api.datamuse.com/words?ml=" + word)
+        data = response.json()
+        if len(data) > 0:
+            result += data[0]['word'] + " "
+            continue
+        result += word + " "
+
+    """
+    Concerns:
+        1) Speed -> Each word needs to pull JSON from site, very time costly and as a result, large sentences take a long while
+        2) Might need a dictionary to filter out some common words from getting thesaursed
+        3a) Punctuation will ruin the search to empty. "word." -> [] aka no result. Punctuations must be taken out then re-placed after thesaurus.
+        3b) Word contractions such as "don't" will ruin uri encode to search up "don%27t" -> "don", wrong word. For whatever reason, the first word returned is "does" which doesn't make sense 
+        4) Currently picks the first result which is based on how confident the API is about how similar a word is to query. Playing with query combinations changes results (sometimes drastically).
+    """
+    await reply.delete()
+    await ctx.send(result.capitalize())
+
+@bot.command()
+async def define(ctx, word):
+    result = ""
+    word = re.sub(r"[^a-zA-Z]", "", word)
+    response = requests.get("https://api.datamuse.com/words?sp=" + word + "&md=d")
+    data = response.json()
+    if len(data) > 0 and 'defs' in data[0]:
+        df = 1
+        for dfn in data[0]['defs']:
+            # if not starts with a -> [2:] else [3:]
+            if dfn.startswith("adj", 0, 3):
+                result += f"{df}) [Adjective] {dfn[4:].capitalize()}\n"
+                df += 1
+            if dfn.startswith("adv", 0, 3):
+                result += f"{df}) [Adverb] {dfn[4:].capitalize()}\n"
+                df += 1
+            if dfn.startswith("n", 0, 1):
+                result += f"{df}) [Noun] {dfn[2:].capitalize()}\n"
+                df += 1
+            if dfn.startswith("v", 0, 1):
+                result += f"{df}) [Verb] {dfn[2:].capitalize()}\n"
+                df += 1
+            if dfn.startswith("u", 0, 1):
+                result += f"{df}) [Unknown] {dfn[2:].capitalize()}\n"
+                df += 1
+        e = discord.Embed(
+            title = f"Definition of {word}",
+            description = result,
+            color = 0X4259F4
+        )
+        await ctx.send(embed = e)
+    else:
+        await ctx.send(f"Could not find a definition for {word}.")
 
 ### Run
 bot.run(read_token())
