@@ -108,11 +108,11 @@ async def help(ctx):
         value = "Generates top 5 hot posts from given subreddit.",
         inline = False
     )
-    e.add_field(
-        name = "{0}google <<word>>".format(bot.command_prefix),
-        value = "Generates definition from Google.",
-        inline = False
-    )
+    #e.add_field(
+    #    name = "{0}google <<word>>".format(bot.command_prefix),
+    #    value = "Generates definition from Google.",
+    #    inline = False
+    #)
     e.add_field(
         name = "{0}define <<word>>".format(bot.command_prefix),
         value = "Returns dictionary definition.",
