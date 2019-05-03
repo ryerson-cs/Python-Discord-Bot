@@ -17,7 +17,7 @@ from helpers import *
 
 ### Setup
 client = discord.Client()
-bot = commands.Bot(command_prefix = "&")
+bot = commands.Bot(command_prefix = "$")
 bot.activity = discord.Game("{0}help for commands.".format(bot.command_prefix)) #Please override later
 bot.remove_command("help")
 
