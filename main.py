@@ -28,14 +28,21 @@ def read_token():
         lines = f.readlines()
         return lines[0].strip()
 
-async def find_reddit_link(subreddit):
+async def find_reddit_link(subreddit, nsfw):
     url = "https://old.reddit.com/r/" + subreddit
     headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
-    try:    
-        request = urllib.request.Request(url,headers=headers)
-        html = urllib.request.urlopen(request).read()
-        scrapper = BeautifulSoup(html,'html.parser')
-        table = scrapper.find("div",attrs={'id':'siteTable'})
+    try:
+        if nsfw:
+            sesh = requests.Session()
+            sesh.cookies.set(name='over18', value='1', domain='.reddit.com')
+            html = sesh.get(url, headers=headers)
+            scrapper = BeautifulSoup(html.text,'html.parser')
+            table = scrapper.find("div",attrs={'id':'siteTable'})
+        else:
+            request = urllib.request.Request(url,headers=headers)
+            html = urllib.request.urlopen(request).read()
+            scrapper = BeautifulSoup(html,'html.parser')
+            table = scrapper.find("div",attrs={'id':'siteTable'})
     except:
         return "Not Found"
 
@@ -57,6 +64,7 @@ async def find_reddit_link(subreddit):
             }
         extracted_records.append(record)
     return extracted_records
+
 ### Events
 @bot.event
 async def on_ready():
@@ -253,15 +261,14 @@ async def subreddit(ctx, *, subreddit):
     await response.delete()
     await ctx.send(embed = e)
 
-
 @bot.command()
 async def reddit(ctx, *, subreddit):
     response = await ctx.send("◌ Collecting...")
-    links = await find_reddit_link(subreddit)
+    links = await find_reddit_link(subreddit, nsfw=ctx.channel.is_nsfw())
     randLink = links[random.randint(0, len(links) - 1 )]
     await response.delete()
 
-    if(not type(links) is list):
+    if (not type(links) is list):
         await ctx.send("Subreddit is " + links + ".")
         return
     for key, value in randLink.items():
@@ -412,6 +419,21 @@ async def pick(ctx, *, s):
     if len(choices) == 1:
         await ctx.send(f"Well, there was only one choice so... I picked {choices[0]}")
     await ctx.send(f"I picked {choices[randint(0, len(choices)-1)]}")
+
+@bot.command()
+async def insta(ctx, *, usr):
+    
+    url = requests.get("https://www.instagram.com/" + usr)
+    with open("instatest2.txt", "w") as f:
+        f.write(url.text)
+    
+    """
+    url = requests.get("https://www.instagram.com/" + usr)
+    scrapper = BeautifulSoup(url.text, "html.parser")
+    with open("instatest_b.txt", "w") as f:
+        #f.write(scrapper.prettify())
+        f.write(url.text)
+    """
 
 @bot.command()
 async def test(ctx):
