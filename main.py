@@ -240,7 +240,7 @@ async def stop(ctx):
 @bot.command()
 async def subreddit(ctx, *, subreddit):
     response = await ctx.send("◌ Collecting...")
-    links = await find_reddit_link(subreddit)
+    links = await find_reddit_link(subreddit, nsfw=ctx.channel.is_nsfw())
     e = discord.Embed(
         title = "Posts from {0}".format(subreddit),
         description = "Top 5 posts from Hot.",
