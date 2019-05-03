@@ -17,7 +17,7 @@ from helpers import *
 
 ### Setup
 client = discord.Client()
-bot = commands.Bot(command_prefix = "$")
+bot = commands.Bot(command_prefix = "&")
 bot.activity = discord.Game("{0}help for commands.".format(bot.command_prefix)) #Please override later
 bot.remove_command("help")
 
@@ -49,7 +49,7 @@ async def find_reddit_link(subreddit, nsfw):
     try:
         links = table.find_all("a",class_="title")
     except:
-        return "Not Found"
+        return "NSFW"
     extracted_records = []
     for link in links: 
         title = link.text
@@ -263,18 +263,8 @@ async def subreddit(ctx, *, subreddit):
 
 @bot.command()
 async def reddit(ctx, *, subreddit):
-    links = ""
-    response = ""
-    if subreddit.startswith("-n "):
-        if ctx.channel.is_nsfw():
-            response = await ctx.send("◌ Collecting...")
-            links = await find_reddit_link(subreddit[3:], nsfw=True)
-        else:
-            await ctx.send("This channel is SFW.")
-            return
-    else:
-        response = await ctx.send("◌ Collecting...")
-        links = await find_reddit_link(subreddit, nsfw=False)
+    response = await ctx.send("◌ Collecting...")
+    links = await find_reddit_link(subreddit, nsfw=ctx.channel.is_nsfw())
     randLink = links[random.randint(0, len(links) - 1 )]
     await response.delete()
 
