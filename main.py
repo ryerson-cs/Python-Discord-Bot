@@ -121,6 +121,11 @@ async def help(ctx):
         inline = False
     )
     e.add_field(
+        name = "{0}insta <<username>>".format(bot.command_prefix),
+        value = "Returns the user's Instagram profile and their most recent post.",
+        inline = False
+    )
+    e.add_field(
         name = "{0}ud <<word>>".format(bot.command_prefix),
         value = "Returns definition from Urban Dictionary.", 
         inline = False
