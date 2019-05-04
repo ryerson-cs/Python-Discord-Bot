@@ -11,6 +11,7 @@ import re
 from random import randint
 import urbandictionary
 from helpers import *
+import time
 
 
 """bot-env\Scripts\activate.bat"""
@@ -422,21 +423,86 @@ async def pick(ctx, *, s):
 
 @bot.command()
 async def insta(ctx, *, usr):
-    
-    url = requests.get("https://www.instagram.com/" + usr)
-    with open("instatest2.txt", "w") as f:
-        f.write(url.text)
-    
-    """
-    url = requests.get("https://www.instagram.com/" + usr)
-    scrapper = BeautifulSoup(url.text, "html.parser")
-    with open("instatest_b.txt", "w") as f:
-        #f.write(scrapper.prettify())
-        f.write(url.text)
-    """
+    url = "https://www.instagram.com/" + usr
+    headers = {'user-agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.3'}
+    sesh = requests.Session()
+    html = sesh.get(url, headers=headers)
+    scrapper = BeautifulSoup(html.text,'html.parser')
+    packet = scrapper.find("body")
+    jstr = packet.find("script").string[21:]
+    details = [] #a list of stuff we want to pull, in the end, if the list is empty or unexpected length then something went wrong
+
+    try:
+        details.append(re.search('\"is_private\":(.+?),', jstr).group(1)) # private boolean
+        details.append(re.search('\"profile_pic_url_hd\":\"(.+?)\"', jstr).group(1)) # user profile pic, this is alt, might be better to grab default
+        details.append(re.search('\"full_name\":\"(.+?)\"', jstr).group(1)) # full name, different from username. which is same as usr var
+        details.append(re.search('\"biography\":\"(.*?)\",', jstr).group(1)) # biography
+        details.append(re.search('\"edge_owner_to_timeline_media\":{\"count\":(.+?),', jstr).group(1)) # number of posts
+        details.append(re.search('\"edge_followed_by":{\"count\":(.+?)}', jstr).group(1)) # number of followers
+        details.append(re.search('\"edge_follow":{\"count\":(.+?)}', jstr).group(1)) # number of followings
+        details.append(re.search('\"display_url\":\"(.+?)\"', jstr).group(1)) # first match should return most recent post
+        if re.search('\"edge_media_to_caption\":{\"edges\":\[]},', jstr): # try matching empty caption
+            details.append("") # if matched append empty
+        else:
+            details.append(re.search('\"edge_media_to_caption\":{\"edges\":\[{\"node\":{\"text\":\"(.+?)\"', jstr).group(1)) # not empty caption
+        details.append(re.search('\"taken_at_timestamp\":(.+?),', jstr).group(1)) # epoch timestamp
+        details.append(re.search('\"edge_liked_by\":{\"count\":(.+?)}', jstr).group(1)) # likes
+        details.append(re.search('\"edge_media_to_comment\":{\"count\":(.+?)}', jstr).group(1)) # comments
+    except AttributeError:
+        pass #swallow exception
+
+    if  (len(details) == 0) or (len(details) != 12 and details[0] == 'false' and details[4] != '0'):
+        await ctx.send("Seems like the user doesn't exist.")
+        return
+
+    e = discord.Embed(
+        title = usr,
+        description = details[4] + " Posts | " + details[5] + " Followers | " + details[6] + " Following",
+        color = 0XF442AA
+    )
+
+    if len(details[3]) == 0:
+        details[3] = "\u00AD"
+    else: 
+        details[3] = gstring.correctify(details[3])
+
+    e.add_field(
+        name = details[2],
+        value = details[3],
+        inline = False
+    )
+
+    if details[0] == 'false' and details[4] != '0':
+        if len(details[8]) == 0:
+            details[8] = "\u00AD"
+        else: 
+            details[8] = gstring.correctify(details[8])
+
+        e.add_field(
+            name = "Recent Post: " + time.strftime('%B %d/%y at %I:%M:%S %p', time.localtime(float(details[9]))),
+            value = details[8],
+            inline = False
+        )
+        e.set_footer(
+            text = "❤️" + gstring.correctify(details[10]) + " | 💬" + gstring.correctify(details[11]),
+        )
+
+        e.set_image(url = details[7])
+    elif details[4] == '0':
+        e.set_footer(
+            text = "User has no posts.",
+        )
+    else:
+        e.set_footer(
+            text = "User is private.",
+        )
+    e.set_thumbnail(url = details[1])
+
+    await ctx.send(embed=e)
 
 @bot.command()
 async def test(ctx):
+    #don't remove this, this will serve purpose for linking helpers
     await ctx.send(pager.test())
 
 ### Run
