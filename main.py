@@ -462,7 +462,7 @@ async def insta(ctx, *, usr):
 
     e = discord.Embed(
         title = usr,
-        description = details[4] + " Posts | " + details[5] + " Followers | " + details[6] + " Following",
+        description = "{:,}".format(int(details[4])) + " Posts | " + "{:,}".format(int(details[5])) + " Followers | " + "{:,}".format(int(details[6])) + " Following\n[Visit on Instagram](" + url + ")",
         color = 0XF442AA
     )
 
@@ -489,7 +489,7 @@ async def insta(ctx, *, usr):
             inline = False
         )
         e.set_footer(
-            text = "❤️" + gstring.correctify(details[10]) + " | 💬" + gstring.correctify(details[11]),
+            text = "❤️" + "{:,}".format(int(details[10])) + " | 💬" + "{:,}".format(int(details[11])),
         )
 
         e.set_image(url = details[7])
