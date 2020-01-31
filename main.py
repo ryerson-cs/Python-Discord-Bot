@@ -178,6 +178,7 @@ async def say(ctx):
 async def avatar(ctx):
     message = ctx.message.content[10: len(ctx.message.content) -1]
     message = message.replace("!", "")
+    message = message.replace("@", "")
 
     if len(message) != 0:
         if (not any(char.isdigit() for char in message) or bot.get_user(int(message)) == None):
